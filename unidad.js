@@ -21,7 +21,7 @@ app.use(express.urlencoded({extended:true}));
 
 
 const corsOptions = {
-  origin: 'http://localhost:5173', // Asegúrate de que esta URL sea la del frontend
+  origin: 'https://franalfaro.ddns.net', // Asegúrate de que esta URL sea la del frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
   allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
   credentials: true,
