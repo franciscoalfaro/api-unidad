@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, register, recovery, profile} from '../controllers/UserController.js';
+import { login, register, recovery, profile, update} from '../controllers/UserController.js';
 
 import {requestPasswordReset, handlePasswordReset } from '../controllers/RecoveryController.js';
 
@@ -12,6 +12,7 @@ router.post('/login', login);
 router.post('/register', register);
 router.post('/recovery', recovery);
 router.get('/profile/:id',checkAuth, profile);
+router.put("/update", checkAuth, update);
 
 
 router.post('/forgot-password', requestPasswordReset); // Solicitar recuperación

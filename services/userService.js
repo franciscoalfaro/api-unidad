@@ -88,3 +88,45 @@ export const resetPassword = async (token, newPassword) => {
 
 }
 
+
+//servicio
+export const profileUpdateService = async (userId, userToUpdate) => {
+    try {
+        // Comprobar si el usuario ya existe
+        const users = await User.find({
+            $or: [{ email: userToUpdate.email.toLowerCase() }],
+        });
+
+        if (!users) {
+            return { status: "error", message: "No existe el usuario a actualizar" };
+        }
+
+        let userIsset = false;
+        users.forEach((user) => {
+            if (user && user._id != userId) userIsset = true;
+        });
+
+        if (userIsset) {
+            return { status: "warning", message: "El usuario ya existe" };
+        }
+
+        // Si hay contraseña, cifrarla
+        if (userToUpdate.password) {
+            let pwd = await bcrypt.hash(userToUpdate.password, 10);
+            userToUpdate.password = pwd;
+        } else {
+            delete userToUpdate.password;
+        }
+
+        // Buscar el usuario y actualizarlo
+        const userUpdate = await User.findByIdAndUpdate(userId, userToUpdate, { new: true });
+
+        if (!userUpdate) {
+            return { status: "error", message: "Error al actualizar" };
+        }
+
+        return { status: "success", message: "Profile update success", user: userUpdate };
+    } catch (error) {
+        return { status: "error", message: "Error en el servidor" };
+    }
+};

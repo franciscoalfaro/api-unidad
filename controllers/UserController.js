@@ -1,5 +1,5 @@
 // controllers/UserController.js
-import { findUserByEmail, createUser, recuperar, profileService } from '../services/userService.js';
+import { findUserByEmail, createUser, recuperar, profileService, profileUpdateService } from '../services/userService.js';
 import bcrypt from 'bcrypt';
 
 import * as jwt from '../services/jwt.js';
@@ -112,6 +112,30 @@ export const profile = async (req, res) => {
     }
 };
 
-export const updateProfile = async (req, res)=>{
-    
-}
+// Controlador
+export const update = async (req, res) => {
+    try {
+        const userIdentity = req.user;
+        let userToUpdate = req.body;
+
+        // Limpiar campos innecesarios
+        delete userToUpdate.iat;
+        delete userToUpdate.exp;
+        delete userToUpdate.role;
+        delete userToUpdate.image;
+
+        // Llamar al servicio para actualizar el perfil
+        const result = await profileUpdateService(userIdentity.id, userToUpdate);
+
+        if (result.status === "error") {
+            return res.status(400).json(result);
+        }
+
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(500).send({
+            status: "error",
+            message: "Error al obtener la información en el servidor",
+        });
+    }
+};
