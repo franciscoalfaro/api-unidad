@@ -53,8 +53,8 @@ export const uploadFileService = async (files, directory, userId) => {
             // Procesar video si es necesario
             if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(fileExtension)) {
                 const qualities = [
-                    { label: '720p', resolution: '1280x720' },
-                    //{ label: '1080p', resolution: '1920x1080' },
+                    { label: '360p', resolution: '640x360' },
+                    
                 ];
 
                 const processedFiles = [];
