@@ -29,7 +29,7 @@ router.put("/update/:fileId", checkAuth, updateFileController);
 router.get("/play/:fileId",checkAuth,  playVideo);
 
 //obtener media imagenes.
-router.get("/media/:file", media)
+router.get("/media/:file",checkAuth, media)
 
 // Exportar router
 export default router;
