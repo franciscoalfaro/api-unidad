@@ -1,12 +1,13 @@
 import fs from 'fs';
+import ds from 'fs/promises';
 import path from 'path';
 import Directory from '../models/directory.js';
 import File from '../models/file.js';
 import { allowedExtensions, disallowedExtensions } from '../middleware/allowExtension.js';
-import  {Readable}  from 'stream';
+import { Readable } from 'stream';
 import ffmpeg from 'fluent-ffmpeg';
 
-ffmpeg.setFfmpegPath( process.env.DRIVER);
+ffmpeg.setFfmpegPath(process.env.DRIVER);
 
 
 // Buscar directorio por ID
@@ -25,7 +26,7 @@ export const uploadFileService = async (files, directory, userId) => {
 
     // Ruta de la carpeta temporal
     const tempPath = path.join(uploadPath, 'temp');
-    
+
     // Crear la carpeta temporal si no existe
     if (!fs.existsSync(tempPath)) {
         fs.mkdirSync(tempPath, { recursive: true });
@@ -54,11 +55,11 @@ export const uploadFileService = async (files, directory, userId) => {
             if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(fileExtension)) {
                 const qualities = [
                     { label: '360p', resolution: '640x360' },
-                    
+
                 ];
 
                 const processedFiles = [];
-                
+
                 // Convertir el archivo a diferentes calidades y guardarlo en la carpeta temporal
                 for (const quality of qualities) {
                     const outputFilePath = path.join(tempPath, `${uniqueFilename}_${quality.label}.${fileExtension}`);
@@ -77,7 +78,7 @@ export const uploadFileService = async (files, directory, userId) => {
                             .on('error', (err) => reject(err))
                             .run();
                     });
-                    
+
                 }
                 //mantener el original y solo reproducir el webm y cuando se eliminen se eliminar tambien el original. 
                 // Eliminar archivo original si se han generado versiones procesadas
@@ -217,4 +218,24 @@ export const playVideoService = async ({ fileId }) => {
     }
 
     return fullPath;
+};
+
+export const mediaService = async ({ ImageId }) => {
+    // Buscar el archivo en la base de datos.
+    const file = await File.findById(ImageId);
+    if (!file) {
+        throw new Error("Archivo no encontrado en la base de datos");
+    }
+
+    const ubication = file.filepath;
+
+    // Comprobar si el archivo existe.
+    try {
+        await ds.stat(ubication);
+    } catch {
+        throw new Error("Archivo no encontrado en el sistema de archivos");
+    }
+
+    // Devolver la ruta completa.
+    return path.resolve(ubication);
 };

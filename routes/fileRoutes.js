@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { deleteFileController,updateFileController, listFilesController, listAllFilesController, uploadFileController, downloadFileController, playVideo  } from '../controllers/FileController.js';
+import { deleteFileController,updateFileController, listFilesController, listAllFilesController, uploadFileController, downloadFileController, playVideo, media  } from '../controllers/FileController.js';
 import { auth as checkAuth } from "../middleware/auth.js";
 
 
@@ -20,12 +20,16 @@ router.get("/files/:folderId", checkAuth, listFilesController);
 //listar todos los archivos
 router.get("/allfiles", checkAuth, listAllFilesController);
 
+
 //descargar archivo que corresponde
 router.get("/download/:fileId", checkAuth, downloadFileController);
 
 router.put("/update/:fileId", checkAuth, updateFileController);
 
 router.get("/play/:fileId",checkAuth,  playVideo);
+
+//obtener media imagenes.
+router.get("/media/:file", media)
 
 // Exportar router
 export default router;

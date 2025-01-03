@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { deleteFile, downloadFileService, findFolder, listAllFilesService, listFilesService, playVideoService, updateFile, uploadFileService } from '../services/FileService.js';
+import { deleteFile, downloadFileService, findFolder, listAllFilesService, listFilesService, playVideoService, updateFile, uploadFileService, mediaService } from '../services/FileService.js';
 
 
 // Subir archivos
@@ -162,5 +162,26 @@ export const playVideo = async (req, res) => {
     } catch (error) {
         console.error(error.message);
         return res.status(500).json({ status: 'error', message: error.message });
+    }
+};
+
+
+export const media = async (req, res) => {
+    try {
+        // Obtener el parámetro de la URL.
+        const ImageId = req.params.file;
+
+        // Llamar al servicio para obtener la ubicación del archivo.
+        const ubication = await mediaService({ ImageId });
+
+        // Enviar el archivo como respuesta.
+        return res.sendFile(ubication);
+    } catch (error) {
+        // Manejar errores y enviar la respuesta adecuada.
+        if (error.message.includes("Archivo no encontrado")) {
+            return res.status(404).json({ status: "error", message: error.message });
+        }
+
+        return res.status(500).json({ status: "error", message: "Error interno del servidor" });
     }
 };
