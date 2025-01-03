@@ -19,15 +19,10 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 
-const corsOptions = {
-  origin: 'https://franalfaro.ddns.net', // Asegúrate de que esta URL sea la del frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
-  credentials: true,
-};
+
 
 // Middleware
-app.use(cors(corsOptions));
+app.use(cors());
 
 
 
