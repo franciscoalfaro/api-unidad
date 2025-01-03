@@ -4,6 +4,10 @@ import Directory from '../models/directory.js';
 import File from '../models/file.js';
 import { allowedExtensions, disallowedExtensions } from '../middleware/allowExtension.js';
 import  {Readable}  from 'stream';
+import ffmpeg from 'fluent-ffmpeg';
+
+ffmpeg.setFfmpegPath( process.env.DRIVER);
+
 
 // Buscar directorio por ID
 export const findFolder = async (folderId) => {
@@ -19,43 +23,98 @@ export const uploadFileService = async (files, directory, userId) => {
     const uploadedFiles = [];
     const uploadPath = path.join(directory.path);
 
-    // Iterar sobre los archivos recibidos
+    // Ruta de la carpeta temporal
+    const tempPath = path.join(uploadPath, 'temp');
+    
+    // Crear la carpeta temporal si no existe
+    if (!fs.existsSync(tempPath)) {
+        fs.mkdirSync(tempPath, { recursive: true });
+    }
+
     for (const file of files) {
         const fileExtension = path.extname(file.originalname).slice(1).toLowerCase();
 
-        // Validar extensiones de archivos
         if (allowedExtensions.includes(fileExtension) && !disallowedExtensions.includes(fileExtension)) {
-            const filePath = path.join(uploadPath, `${Date.now()}-${file.originalname}`); // Nombre único
+            const uniqueFilename = `${Date.now()}-${file.originalname}`;
+            const filePath = path.join(uploadPath, uniqueFilename);
 
-            // Crear un WriteStream para guardar el archivo
+            // Guardar el archivo original
             const writeStream = fs.createWriteStream(filePath);
-
-            // Crear un Readable Stream con el contenido del archivo (buffer)
             const readableStream = new Readable();
             readableStream.push(file.buffer);
-            readableStream.push(null);  // Finaliza el stream
-
-            // Pipe del Readable al WriteStream
+            readableStream.push(null);
             readableStream.pipe(writeStream);
 
-            // Esperar a que termine la escritura
             await new Promise((resolve, reject) => {
                 writeStream.on('finish', resolve);
                 writeStream.on('error', reject);
             });
 
-            // Guardar los datos del archivo en la base de datos
-            const newFile = new File({
-                filename: file.originalname,
-                filepath: filePath.replace(/\\/g, '/'),  // Asegurar formato de path
-                mimetype: file.mimetype,
-                size: file.size,
-                uploadedBy: userId,
-                directory: directory._id
-            });
+            // Procesar video si es necesario
+            if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(fileExtension)) {
+                const qualities = [
+                    { label: '360p', resolution: '640x360' },
+                    { label: '720p', resolution: '1280x720' },
+                    { label: '1080p', resolution: '1920x1080' },
+                ];
 
-            await newFile.save();
-            uploadedFiles.push(newFile);
+                const processedFiles = [];
+                
+                // Convertir el archivo a diferentes calidades y guardarlo en la carpeta temporal
+                for (const quality of qualities) {
+                    const outputFilePath = path.join(tempPath, `${uniqueFilename}_${quality.label}.${fileExtension}`);
+
+                    await new Promise((resolve, reject) => {
+                        ffmpeg(filePath)
+                            .size(quality.resolution)
+                            .output(outputFilePath)
+                            .on('end', () => {
+                                processedFiles.push({
+                                    quality: quality.label,
+                                    path: outputFilePath.replace(/\\/g, '/'),
+                                });
+                                resolve();
+                            })
+                            .on('error', (err) => reject(err))
+                            .run();
+                    });
+                    
+                }
+                //mantener el original y solo reproducir el webm y cuando se eliminen se eliminar tambien el original. 
+                // Eliminar archivo original si se han generado versiones procesadas
+                //if (processedFiles.length > 0) {
+                //    fs.unlinkSync(filePath); // Eliminar archivo original
+                //}
+
+                // Guardar versiones procesadas en la base de datos
+                for (const processedFile of processedFiles) {
+                    const newFile = new File({
+                        filename: `${uniqueFilename}_${processedFile.quality}`,
+                        filepath: processedFile.path,
+                        mimetype: file.mimetype,
+                        size: fs.statSync(processedFile.path).size,
+                        uploadedBy: userId,
+                        directory: directory._id,
+                        quality: processedFile.quality,
+                    });
+
+                    await newFile.save();
+                    uploadedFiles.push(newFile);
+                }
+            } else {
+                // Guardar archivo no procesado en la base de datos
+                const newFile = new File({
+                    filename: file.originalname,
+                    filepath: filePath.replace(/\\/g, '/'),
+                    mimetype: file.mimetype,
+                    size: file.size,
+                    uploadedBy: userId,
+                    directory: directory._id,
+                });
+
+                await newFile.save();
+                uploadedFiles.push(newFile);
+            }
         } else {
             throw new Error(`Extensión no permitida: ${fileExtension}`);
         }
@@ -63,7 +122,6 @@ export const uploadFileService = async (files, directory, userId) => {
 
     return uploadedFiles;
 };
-
 
 // Eliminar archivo
 export const deleteFile = async (fileId) => {
@@ -147,12 +205,17 @@ export const listAllFilesService = async () => {
 
 //servicio
 export const playVideoService = async ({ fileId }) => {
-    const file = await File.findById(fileId); // Buscar el archivo
+    const file = await File.findById(fileId);
 
     if (!file) {
         throw new Error('Archivo no encontrado');
     }
 
-    // Devolver solo la ruta relativa del archivo
-    return file.filepath; // Ruta lógica del archivo
+    // Validar que el archivo existe en el sistema
+    const fullPath = path.resolve(file.filepath);
+    if (!fs.existsSync(fullPath)) {
+        throw new Error('Archivo físico no encontrado en el servidor');
+    }
+
+    return fullPath;
 };

@@ -9,22 +9,21 @@ export const uploadFileController = async (req, res) => {
     const userId = req.user.id;
 
     try {
-        // Verificar si se recibieron archivos
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ error: 'No se han subido archivos' });
         }
 
-        // Buscar el directorio en base al ID
         const directory = await findFolder(folderId);
-
-        // Procesar y guardar los archivos
         const uploadedFiles = await uploadFileService(req.files, directory, userId);
 
-        // Responder con los archivos subidos
         res.status(201).json({
             status: 'success',
             message: 'Archivos subidos correctamente',
-            files: uploadedFiles
+            files: uploadedFiles.map((file) => ({
+                filename: file.filename,
+                filepath: file.filepath,
+                quality: file.quality || 'original',
+            })),
         });
     } catch (error) {
         console.error('Error al procesar la carga:', error.message);
@@ -115,7 +114,7 @@ export const listAllFilesController = async (req, res) => {
 
 // Controller
 export const playVideo = async (req, res) => {
-    const { fileId } = req.params; // Obtener el fileId desde los parámetros de la ruta
+    const { fileId } = req.params;
 
     if (!fileId) {
         return res.status(400).json({ status: 'error', message: 'El parámetro fileId es requerido' });
@@ -128,13 +127,40 @@ export const playVideo = async (req, res) => {
             return res.status(404).json({ status: 'error', message: 'El archivo de video no se encontró' });
         }
 
-        // Servir el archivo al cliente
-        res.set("Content-Type", "video/mp4");
-        res.set("Content-Disposition", `attachment; filename="${path.basename(videoFilePath)}"`);
-        return res.sendFile(path.resolve(videoFilePath));
+        const absolutePath = path.resolve(videoFilePath);
+        const stat = fs.statSync(absolutePath); // Obtener información del archivo
 
+        const fileSize = stat.size;
+        const range = req.headers.range;
+
+        if (range) {
+            // Transmisión parcial
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+            const chunkSize = (end - start) + 1;
+            const fileStream = fs.createReadStream(absolutePath, { start, end });
+
+            res.writeHead(206, {
+                "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+                "Accept-Ranges": "bytes",
+                "Content-Length": chunkSize,
+                "Content-Type": "video/mp4"
+            });
+
+            fileStream.pipe(res);
+        } else {
+            // Enviar todo el archivo si no hay encabezado `Range`
+            res.writeHead(200, {
+                "Content-Length": fileSize,
+                "Content-Type": "video/mp4"
+            });
+
+            fs.createReadStream(absolutePath).pipe(res);
+        }
     } catch (error) {
-        console.log(error.message)
+        console.error(error.message);
         return res.status(500).json({ status: 'error', message: error.message });
     }
 };

@@ -29,6 +29,9 @@ const fileSchema = new Schema({
         ref: 'Directory',
         required: true,
     },
+    quality: { 
+        type: String 
+    },
     createdAt: {
         type: Date,
         default: Date.now,
