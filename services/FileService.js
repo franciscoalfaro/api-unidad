@@ -54,8 +54,7 @@ export const uploadFileService = async (files, directory, userId) => {
             // Procesar video si es necesario
             if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(fileExtension)) {
                 const qualities = [
-                    { label: '360p', resolution: '640x360' },
-
+                    { label: '720p', resolution: '1280x720' },
                 ];
 
                 const processedFiles = [];
@@ -80,10 +79,9 @@ export const uploadFileService = async (files, directory, userId) => {
                     });
 
                 }
-                //mantener el original y solo reproducir el webm y cuando se eliminen se eliminar tambien el original. 
-                // Eliminar archivo original si se han generado versiones procesadas
+                //por ahora no se eliminara original
                 //if (processedFiles.length > 0) {
-                //    fs.unlinkSync(filePath); // Eliminar archivo original
+                //    fs.unlinkSync(filePath); 
                 //}
 
                 // Guardar versiones procesadas en la base de datos
