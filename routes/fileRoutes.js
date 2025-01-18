@@ -15,7 +15,7 @@ router.post("/uploads/:folderId", checkAuth, uploads.array('files'), uploadFileC
 router.delete("/delete/:fileId", checkAuth, deleteFileController)
 
 //obtener el listado de archivos
-router.get("/files/:folderId", checkAuth, listFilesController);
+router.get("/files/:folderId/:page?", checkAuth, listFilesController);
 
 //listar todos los archivos
 router.get("/allfiles", checkAuth, listAllFilesController);

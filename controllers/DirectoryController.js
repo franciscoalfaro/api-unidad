@@ -67,8 +67,14 @@ export const getAllDirectoriesController = async (req, res) => {
 
 export const getDirectoriesController = async (req, res) => {
     const userId = req.user.id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    let page = 1
+    if (req.params.page) {
+        page = req.params.page
+    }
+    page = parseInt(page)
+
+    let limit = 10
+
 
     try {
         if (!userId) {
