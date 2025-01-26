@@ -1,7 +1,7 @@
 // controllers/UserController.js
 import { findUserByEmail, createUser, recuperar, profileService, profileUpdateService } from '../services/userService.js';
 import bcrypt from 'bcrypt';
-
+import { addToBlacklist } from '../services/tokenBlacklist.js';
 import * as jwt from '../services/jwt.js';
 
 
@@ -27,8 +27,6 @@ export const login = async (req, res) => {
             });
         }
 
-
-
         // Validar si el usuario está activo (opcional)
         if (user.eliminado) {
             return res.status(403).json({
@@ -37,16 +35,19 @@ export const login = async (req, res) => {
             });
         }
 
-        // Generar token JWT
-        const token = jwt.createToken(user);
+        // Generar tokens JWT
+        const accessToken = jwt.createToken(user);
+        const refreshToken = jwt.createRefreshToken(user);
+
+        // Establecer cookies HTTP-only
+        res.cookie('access_token', accessToken, { httpOnly: true });
+        res.cookie('refresh_token', refreshToken, { httpOnly: true });
 
         // Enviar respuesta
         res.json({
             status: "success",
-            token,
-            user: { id: user._id, email: user.email, name: user.name,surname: user.surname } // Opcional: excluir información sensible
+            user: { id: user._id, email: user.email, name: user.name, surname: user.surname } // Opcional: excluir información sensible
         });
-
 
     } catch (error) {
         console.error(error); // Registro del error para depuración
@@ -138,4 +139,26 @@ export const update = async (req, res) => {
             message: "Error al obtener la información en el servidor",
         });
     }
+};
+
+export const logout = async (req, res) => {
+    const accessToken = req.cookies.access_token;
+    console.log('acces',accessToken)
+    const refreshToken = req.cookies.refresh_token;
+
+    if (accessToken) {
+        await addToBlacklist(accessToken);
+    }
+
+    if (refreshToken) {
+        await addToBlacklist(refreshToken);
+    }
+
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+
+    res.status(200).send({
+        status: "success",
+        message: "Sesión cerrada"
+    });
 };

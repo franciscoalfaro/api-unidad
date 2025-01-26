@@ -1,14 +1,12 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-// importar dependencias
 import jwt from "jwt-simple";
 import moment from 'moment';
 
-// clave secreta
 const secret_key = process.env.SECRET_KEY;
+const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
 
-// crear funcion para generar tokens
 export const createToken = (user) => {
     const payload = {
         id: user.id,
@@ -17,10 +15,18 @@ export const createToken = (user) => {
         email: user.email,
         role: user.role,
         iat: moment().unix(),
-        exp: moment().add(30, "days").unix()
+        exp: moment().add(5, "minutes").unix() // Tiempo de vida corto para access token
     };
-    // devolver jwt token
     return jwt.encode(payload, secret_key);
 };
 
-export { secret_key };
+export const createRefreshToken = (user) => {
+    const payload = {
+        id: user.id,
+        iat: moment().unix(),
+        exp: moment().add(30, "days").unix() // Tiempo de vida largo para refresh token
+    };
+    return jwt.encode(payload, refresh_secret_key);
+};
+
+export { secret_key, refresh_secret_key };

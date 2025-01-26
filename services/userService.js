@@ -3,9 +3,8 @@ import bcrypt from 'bcrypt';
 import User from '../models/user.js';
 import sendEmail from '../services/EmailService.js';
 import nuevaclave from '../middleware/generatepassword.js'
+import * as jwt from '../services/jwt.js';
 
-// services/userService.js
-import crypto from 'crypto';
 
 export const findUserByEmail = async (email) => {
     return await User.findOne({ email });
@@ -63,7 +62,8 @@ export const generateResetToken = async (email) => {
     }
 
     // Generar un token único
-    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    const resetToken = jwt.createToken(user)
     const resetTokenExpiration = Date.now() + 3600000; // Válido por 1 hora
 
     // Guardar el token y su vencimiento
@@ -76,10 +76,12 @@ export const generateResetToken = async (email) => {
 
 export const resetPassword = async (token, newPassword) => {
     const user = await User.findOne({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } })
+
     if (!user) {
         throw new Error('Token inválido o vencido')
     }
     user.password = await bcrypt.hash(newPassword, 10);
+
     user.resetToken = undefined; // Limpiar el token después de usarlo
     user.resetTokenExpiration = undefined;
     await user.save();

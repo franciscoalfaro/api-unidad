@@ -11,7 +11,7 @@ export const requestPasswordReset = async (req, res) => {
         const resetToken = await generateResetToken(email);
 
         // URL para restablecer la contraseña
-        const resetURL = `http://${process.env.FRONTEND_URL}api/usuarios/reset-password?token=${resetToken}`;
+        const resetURL = `http://${process.env.FRONTEND_URL}api/user/reset-password/${resetToken}`;
         let urlconvertida = resetURL.toString()
 
         // Enviar email al usuario
@@ -26,7 +26,8 @@ export const requestPasswordReset = async (req, res) => {
 };
 
 export const handlePasswordReset = async (req, res) => {
-    const { token, newPassword } = req.body;
+    const { newPassword } = req.body;
+    const {token} = req.params
 
     try {
         const user = await resetPassword(token, newPassword);

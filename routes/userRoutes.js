@@ -16,6 +16,7 @@ router.put("/update", checkAuth, update);
 
 
 router.post('/forgot-password', requestPasswordReset); // Solicitar recuperación
-router.post('/reset-password', handlePasswordReset);  // Restablecer contraseña
+router.post('/reset-password/:token', handlePasswordReset);  // Restablecer contraseña
+router.post('/logout', checkAuth, logout); // Ruta para cerrar sesión
 
 export default router;
