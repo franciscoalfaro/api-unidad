@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, register, recovery, profile, update} from '../controllers/UserController.js';
+import { login, register, recovery, profile, update, logout} from '../controllers/UserController.js';
 
 import {requestPasswordReset, handlePasswordReset } from '../controllers/RecoveryController.js';
 
