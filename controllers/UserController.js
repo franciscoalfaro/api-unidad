@@ -25,6 +25,7 @@ export const login = async (req, res) => {
         res.json({
             status: "success",
             user: result.user,
+            message:'login correcto'
         });
     } catch (error) {
         console.error(error); // Registrar error para depuración
