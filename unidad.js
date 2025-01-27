@@ -7,6 +7,7 @@ import fileRoutes from './routes/fileRoutes.js';
 import directoryRoutes from './routes/directoryRoutes.js';
 import { connection } from './bd/conexion.js';
 import path from 'path';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -20,10 +21,15 @@ app.use(express.urlencoded({extended:true}));
 
 
 
+const corsOptions = {
+  origin: 'http://localhost:5174', // Origen permitido
+  credentials: true, // Habilitar el envío de cookies y credenciales
+};
 
-// Middleware
-app.use(cors());
+//configurar cors
+app.use(cors(corsOptions));
 
+app.use(cookieParser());
 
 
 app.use('/uploads', express.static(path.join('uploads')));

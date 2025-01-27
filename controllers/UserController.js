@@ -7,7 +7,7 @@ import * as jwt from '../services/jwt.js';
 
 export const login = async (req, res) => {
     const { email, password } = req.body;
-
+  
     try {
         // Validar que ambos campos sean enviados
         if (!email || !password) {
@@ -40,8 +40,8 @@ export const login = async (req, res) => {
         const refreshToken = jwt.createRefreshToken(user);
 
         // Establecer cookies HTTP-only
-        res.cookie('access_token', accessToken, { httpOnly: true });
-        res.cookie('refresh_token', refreshToken, { httpOnly: true });
+        res.cookie('access_token', accessToken,{ httpOnly: true, secure: true, sameSite: 'strict' });
+        res.cookie('refresh_token', refreshToken,{ httpOnly: true, secure: true, sameSite: 'strict' });
 
         // Enviar respuesta
         res.json({
