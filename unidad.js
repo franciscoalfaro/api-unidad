@@ -22,7 +22,7 @@ app.use(express.urlencoded({extended:true}));
 
 
 const corsOptions = {
-  origin: 'http://localhost:5174', // Origen permitido
+  origin: process.env.CORS_URL, // Origen permitido
   credentials: true, // Habilitar el envío de cookies y credenciales
 };
 
