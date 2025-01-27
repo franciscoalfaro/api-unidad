@@ -118,24 +118,35 @@ export const update = async (req, res) => {
     }
 };
 
+// controlador 
 export const logout = async (req, res) => {
     const accessToken = req.cookies.access_token;
-    console.log('acces',accessToken)
+
     const refreshToken = req.cookies.refresh_token;
 
-    if (accessToken) {
-        await addToBlacklist(accessToken);
+    try {
+        if (accessToken) {
+            const tokenblac = await addToBlacklist(accessToken);  // Esto ahora solo insertará si el token no está en la blacklist
+            console.log('enviado accessToken', tokenblac)
+        }
+
+        if (refreshToken) {
+            const tokenblac = await addToBlacklist(refreshToken);  // Lo mismo para el refreshToken
+            console.log('enviado refreshToken', tokenblac)
+        }
+
+        // Limpiar las cookies
+        res.clearCookie('access_token');
+        res.clearCookie('refresh_token');
+
+        res.status(200).send({
+            status: "success",
+            message: "Sesión cerrada"
+        });
+    } catch (error) {
+        res.status(500).send({
+            status: "error",
+            message: "Hubo un problema al cerrar sesión."
+        });
     }
-
-    if (refreshToken) {
-        await addToBlacklist(refreshToken);
-    }
-
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
-
-    res.status(200).send({
-        status: "success",
-        message: "Sesión cerrada"
-    });
 };
