@@ -24,14 +24,15 @@ app.use(express.urlencoded({extended:true}));
 const allowedOrigins = ['http://localhost:5174', 'https://franalfaro.ddns.net', 'https://miunidad.pages.dev'];
 
 const corsOptions = {
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true); // Permitir acceso
-        } else {
-            callback(new Error('Origen no permitido por CORS'));
-        }
-    },
-    credentials: true,
+  origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true); // Permitir acceso
+      } else {
+          callback(new Error('Origen no permitido por CORS'));
+      }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // Asegúrate de permitir OPTIONS
+  credentials: true,
 };
 
 //configurar cors
