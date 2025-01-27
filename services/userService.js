@@ -10,6 +10,47 @@ export const findUserByEmail = async (email) => {
     return await User.findOne({ email });
 };
 
+
+//servicio de login
+export const loginService = async (email, password) => {
+    // Validar que ambos campos se proporcionen
+    if (!email || !password) {
+        return {
+            status: 400,
+            message: "Correo y contraseña son requeridos",
+        };
+    }
+
+    // Buscar usuario por correo electrónico
+    const user = await findUserByEmail(email.toLowerCase());
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+        return {
+            status: 401,
+            message: "Correo o contraseña incorrectos",
+        };
+    }
+
+    // Validar si el usuario está activo
+    if (user.eliminado) {
+        return {
+            status: 403,
+            message: "Usuario deshabilitado, contacta al administrador",
+        };
+    }
+
+    // Generar tokens JWT
+    const accessToken = jwt.createToken(user);
+    const refreshToken = jwt.createRefreshToken(user);
+
+    return {
+        status: 200,
+        accessToken,
+        refreshToken,
+        user: { id: user._id, email: user.email, name: user.name, surname: user.surname },
+    };
+};
+
 export const findUserById = async (userId) => {
     return await User.findById(userId).select({ "password": 0 });
 }

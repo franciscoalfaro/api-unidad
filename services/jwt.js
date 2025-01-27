@@ -15,7 +15,7 @@ export const createToken = (user) => {
         email: user.email,
         role: user.role,
         iat: moment().unix(),
-        exp: moment().add(5, "minutes").unix() // Tiempo de vida corto para access token
+        exp: moment().add(5, "minutes").unix() // Short lifespan for access token
     };
     return jwt.encode(payload, secret_key);
 };
@@ -24,7 +24,7 @@ export const createRefreshToken = (user) => {
     const payload = {
         id: user.id,
         iat: moment().unix(),
-        exp: moment().add(30, "days").unix() // Tiempo de vida largo para refresh token
+        exp: moment().add(30, "days").unix() // Long lifespan for refresh token
     };
     return jwt.encode(payload, refresh_secret_key);
 };

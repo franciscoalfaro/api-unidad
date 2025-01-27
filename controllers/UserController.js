@@ -1,56 +1,33 @@
 // controllers/UserController.js
-import { findUserByEmail, createUser, recuperar, profileService, profileUpdateService } from '../services/userService.js';
-import bcrypt from 'bcrypt';
+import { createUser, recuperar, profileService, profileUpdateService, loginService } from '../services/userService.js';
 import { addToBlacklist } from '../services/tokenBlacklist.js';
-import * as jwt from '../services/jwt.js';
 
 
 export const login = async (req, res) => {
     const { email, password } = req.body;
-  
+
     try {
-        // Validar que ambos campos sean enviados
-        if (!email || !password) {
-            return res.status(400).json({
+        const result = await loginService(email, password);
+
+        // Manejar diferentes respuestas según el servicio
+        if (result.status !== 200) {
+            return res.status(result.status).json({
                 status: "error",
-                message: "Correo y contraseña son requeridos",
+                message: result.message,
             });
         }
 
-        // Buscar usuario por correo electrónico
-        const user = await findUserByEmail(email.toLowerCase());
+        // Configurar cookies HTTP-only
+        res.cookie('access_token', result.accessToken, { httpOnly: true, secure: true, sameSite: 'strict' });
+        res.cookie('refresh_token', result.refreshToken, { httpOnly: true, secure: true, sameSite: 'strict' });
 
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({
-                status: "error",
-                message: "Correo o contraseña incorrectos",
-            });
-        }
-
-        // Validar si el usuario está activo (opcional)
-        if (user.eliminado) {
-            return res.status(403).json({
-                status: "error",
-                message: "Usuario deshabilitado, contacta al administrador",
-            });
-        }
-
-        // Generar tokens JWT
-        const accessToken = jwt.createToken(user);
-        const refreshToken = jwt.createRefreshToken(user);
-
-        // Establecer cookies HTTP-only
-        res.cookie('access_token', accessToken,{ httpOnly: true, secure: true, sameSite: 'strict' });
-        res.cookie('refresh_token', refreshToken,{ httpOnly: true, secure: true, sameSite: 'strict' });
-
-        // Enviar respuesta
+        // Enviar respuesta exitosa
         res.json({
             status: "success",
-            user: { id: user._id, email: user.email, name: user.name, surname: user.surname } // Opcional: excluir información sensible
+            user: result.user,
         });
-
     } catch (error) {
-        console.error(error); // Registro del error para depuración
+        console.error(error); // Registrar error para depuración
         res.status(500).json({
             status: "error",
             message: "Error interno del servidor",
