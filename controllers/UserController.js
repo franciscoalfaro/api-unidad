@@ -18,8 +18,8 @@ export const login = async (req, res) => {
         }
 
         // Configurar cookies HTTP-only
-        res.cookie('access_token', result.accessToken, { httpOnly: true, secure: true, sameSite: 'strict' });
-        res.cookie('refresh_token', result.refreshToken, { httpOnly: true, secure: true, sameSite: 'strict' });
+        res.cookie('access_token', result.accessToken, { httpOnly: true, secure: true, sameSite: 'None' });
+        res.cookie('refresh_token', result.refreshToken, { httpOnly: true, secure: true, sameSite: 'None' });
 
         // Enviar respuesta exitosa
         res.json({
