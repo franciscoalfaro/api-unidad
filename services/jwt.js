@@ -15,7 +15,7 @@ export const createToken = (user) => {
         email: user.email,
         role: user.role,
         iat: moment().unix(),
-        exp: moment().add(5, "minutes").unix() // Short lifespan for access token
+        exp: moment().add(1, "days").unix() // Short lifespan for access token
     };
     return jwt.encode(payload, secret_key);
 };
