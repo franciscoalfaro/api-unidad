@@ -42,6 +42,7 @@ export const loginService = async (email, password) => {
     // Generar tokens JWT
     const accessToken = jwt.createToken(user);
     const refreshToken = jwt.createRefreshToken(user);
+    console.log('token generado',accessToken)
 
     return {
         status: 200,
