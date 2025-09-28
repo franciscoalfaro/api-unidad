@@ -14,6 +14,7 @@ router.post('/recovery', recovery);
 router.get('/profile/:id',checkAuth, profile);
 router.put("/update", checkAuth, update);
 
+router.post("/uploads", checkAuth, uploads.single('file0'));
 
 router.post('/forgot-password', requestPasswordReset); // Solicitar recuperación
 router.post('/reset-password/:token', handlePasswordReset);  // Restablecer contraseña

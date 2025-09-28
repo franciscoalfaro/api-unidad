@@ -21,7 +21,7 @@ app.use(express.urlencoded({extended:true}));
 
 
 
-const allowedOrigins = ['https://franalfaro.ddns.net', 'https://miunidad.pages.dev'];
+const allowedOrigins = ['https://franalfaro.ddns.net', 'https://miunidad.pages.dev','http://localhost:5173'];
 
 const corsOptions = {
   origin: (origin, callback) => {
