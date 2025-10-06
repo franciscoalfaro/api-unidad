@@ -83,8 +83,7 @@ api-unidad/
 | GET    | /allfiles            | Listar todos los archivos       | — (JWT requerido)                     |
 | GET    | /download/:fileId    | Descargar archivo               | fileId en params                      |
 | PUT    | /update/:fileId      | Actualizar archivo              | {name?, description?} (JWT requerido)|
-| GET    | /play/:fileId        | Reproducir video                | fileId en params                      |
-| GET    | /media/:file         | Obtener media (imagen/video)    | file en params                        |
+
 
 ### Directorios (`/api/directory`)
 | Método | Ruta              | Descripción                     | Body / Parámetros                 |
