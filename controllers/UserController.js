@@ -21,11 +21,12 @@ export const login = async (req, res) => {
         res.cookie('access_token', result.accessToken, { httpOnly: true, secure: true, sameSite: 'None' });
         res.cookie('refresh_token', result.refreshToken, { httpOnly: true, secure: true, sameSite: 'None' });
 
+    
         // Enviar respuesta exitosa
         res.json({
             status: "success",
             user: result.user,
-            message:'login correcto'
+            message:'login correcto',
         });
     } catch (error) {
         console.error(error); // Registrar error para depuración

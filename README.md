@@ -1,7 +1,13 @@
 # 📘 API Unidad
 
-API Unidad es una aplicación backend para la gestión de usuarios, archivos y directorios, construida con Node.js, Express y MongoDB (Mongoose).  
-Está desplegada en AWS y soporta autenticación, subida de archivos, y operaciones CRUD para usuarios y directorios.
+![Node.js](https://img.shields.io/badge/Node.js-18.x-green?logo=node.js)
+![Express](https://img.shields.io/badge/Express-4.x-lightgrey?logo=express)
+![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-brightgreen?logo=mongodb)
+![AWS](https://img.shields.io/badge/Deployed-AWS-orange?logo=amazon-aws)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
+**API Unidad** es una aplicación backend para la gestión de usuarios, archivos y directorios, construida con **Node.js**, **Express** y **MongoDB (Mongoose)**.  
+Está desplegada en **AWS** y soporta autenticación, subida de archivos, y operaciones CRUD para usuarios y directorios.
 
 ## 🧰 Tecnologías
 
